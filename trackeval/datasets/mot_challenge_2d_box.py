@@ -120,10 +120,12 @@ class MotChallenge2DBox(_BaseDataset):
                 for seq in self.seq_list:
                     curr_file = os.path.join(self.tracker_fol, tracker, self.tracker_sub_fol, seq + '.txt')
                     if not os.path.isfile(curr_file):
-                        print('Tracker file not found: ' + curr_file)
-                        raise TrackEvalException(
-                            'Tracker file not found: ' + tracker + '/' + self.tracker_sub_fol + '/' + os.path.basename(
-                                curr_file))
+                        with open(curr_file, "w") as f:
+                            pass
+                        # print('Tracker file not found: ' + curr_file)
+                        # raise TrackEvalException(
+                        #     'Tracker file not found: ' + tracker + '/' + self.tracker_sub_fol + '/' + os.path.basename(
+                        #         curr_file))
 
     def get_display_name(self, tracker):
         return self.tracker_to_disp[tracker]

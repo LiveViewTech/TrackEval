@@ -15,8 +15,10 @@ class TrackletLength(_BaseMetric):
     def eval_sequence(self, data):
         """Returns counts for one sequence"""
         # Get results
-        res = {'Det_AvgTrLen': np.mean(np.array(data['dt_track_lengths'])),
-               'GT_Det_AvgTrLen': np.mean(np.array(data['gt_track_lengths']))}
+        res = {
+            'Det_AvgTrLen': np.mean(np.array(data['dt_track_lengths'])) if len(data['dt_track_lengths']) > 0 else 0.0,
+            'GT_Det_AvgTrLen': np.mean(np.array(data['gt_track_lengths'])) if len(data['gt_track_lengths']) > 0 else 0.0
+        }
         return res
 
     def combine_sequences(self, all_res):
