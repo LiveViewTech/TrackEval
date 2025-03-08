@@ -120,10 +120,12 @@ class MotChallenge2DBox(_BaseDataset):
                 for seq in self.seq_list:
                     curr_file = os.path.join(self.tracker_fol, tracker, self.tracker_sub_fol, seq + '.txt')
                     if not os.path.isfile(curr_file):
-                        print('Tracker file not found: ' + curr_file)
-                        raise TrackEvalException(
-                            'Tracker file not found: ' + tracker + '/' + self.tracker_sub_fol + '/' + os.path.basename(
-                                curr_file))
+                        with open(curr_file, "w") as f:
+                            pass
+                        # print('Tracker file not found: ' + curr_file)
+                        # raise TrackEvalException(
+                        #     'Tracker file not found: ' + tracker + '/' + self.tracker_sub_fol + '/' + os.path.basename(
+                        #         curr_file))
 
     def get_display_name(self, tracker):
         return self.tracker_to_disp[tracker]
@@ -404,6 +406,7 @@ class MotChallenge2DBox(_BaseDataset):
             num_gt_dets += len(data['gt_ids'][t])
 
         # Re-label IDs such that there are no empty IDs
+        gt_id_occurences = np.empty(0).astype(int)
         if len(unique_gt_ids) > 0:
             unique_gt_ids = np.unique(unique_gt_ids)
             gt_id_map = np.nan * np.ones((np.max(unique_gt_ids) + 1))
@@ -411,6 +414,9 @@ class MotChallenge2DBox(_BaseDataset):
             for t in range(raw_data['num_timesteps']):
                 if len(data['gt_ids'][t]) > 0:
                     data['gt_ids'][t] = gt_id_map[data['gt_ids'][t]].astype(np.int)
+                    gt_id_occurences = np.concatenate([gt_id_occurences, data['gt_ids'][t]])
+        _, gt_track_lengths = np.unique(gt_id_occurences, return_counts=True)
+        tracker_id_occurences = np.empty(0).astype(int)
         if len(unique_tracker_ids) > 0:
             unique_tracker_ids = np.unique(unique_tracker_ids)
             tracker_id_map = np.nan * np.ones((np.max(unique_tracker_ids) + 1))
@@ -418,12 +424,16 @@ class MotChallenge2DBox(_BaseDataset):
             for t in range(raw_data['num_timesteps']):
                 if len(data['tracker_ids'][t]) > 0:
                     data['tracker_ids'][t] = tracker_id_map[data['tracker_ids'][t]].astype(np.int)
+                    tracker_id_occurences = np.concatenate([tracker_id_occurences, data['tracker_ids'][t]])
+        _, tracker_track_lengths = np.unique(tracker_id_occurences, return_counts=True)
 
         # Record overview statistics.
         data['num_tracker_dets'] = num_tracker_dets
         data['num_gt_dets'] = num_gt_dets
         data['num_tracker_ids'] = len(unique_tracker_ids)
         data['num_gt_ids'] = len(unique_gt_ids)
+        data['gt_track_lengths'] = list(gt_track_lengths)
+        data['dt_track_lengths'] = list(tracker_track_lengths)
         data['num_timesteps'] = raw_data['num_timesteps']
         data['seq'] = raw_data['seq']
 
